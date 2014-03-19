@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/gfk-ba/meteor-mailgun-api.png)](http://travis-ci.org/gfk-ba/meteor-mailgun-api)
+
 Mailgun API
 =====================
 
@@ -11,15 +13,9 @@ The instance of the npm module lives in Mailgun.api so use that for calling meth
 Installation
 ------------
 Install this package using [Meteorite](https://github.com/oortcloud/meteorite/):
-```
-
-Usage:
-------
 
 
 Contributions
 -------------
 Any contributions are welcome. Please create an issue on github to start a discussion about the contribution you're planning to make.
 
-Available external extensions:
-------------------------------
