@@ -1,4 +1,4 @@
-meteor-trail
+Mailgun API
 =====================
 
 Mailgun API - Mailgun api implementation for Meteor.
