@@ -1,0 +1,9 @@
+{
+	"name": "mailgun-api",
+	"description": "Mailgun api implementation for Meteor",
+	"homepage": "https://github.com/gfk-ba/meteor-mailgun-api",
+	"author": "Marco de Jongh (marco.dejongh@gfk.com)",
+	"version": "0.1.0",
+	"git": "https://github.com/gfk-ba/meteor-mailgun-api",
+	"packages": {}
+}
