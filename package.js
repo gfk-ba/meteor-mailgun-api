@@ -15,7 +15,7 @@ Package.on_use(function(api) {
 });
 
 Package.on_test(function (api) {
-    api.use(['meteor-mailgun-api', 'tinytest']);
+    api.use(['mailgun-api', 'tinytest']);
 
     api.add_files('meteor-mailgun-api_tests.js', ['server']);
 });
