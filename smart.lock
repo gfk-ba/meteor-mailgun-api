@@ -1,0 +1,15 @@
+{
+  "meteor": {},
+  "dependencies": {
+    "basePackages": {
+      "mailgun-api": {
+        "path": "."
+      }
+    },
+    "packages": {
+      "mailgun-api": {
+        "path": "."
+      }
+    }
+  }
+}

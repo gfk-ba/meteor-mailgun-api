@@ -1,6 +1,9 @@
+var mailgunJS = Npm.require('mailgun-js');
+
 Mailgun = (function () {
-    var constructor = function (api_key, domain) {
-        this.api = Npm.require('mailgun-js')(api_key, domain);
+    var constructor = function (options) {
+        options = options || {};
+        this.api = new mailgunJS(options);
     };
 
     return constructor;

@@ -1,5 +1,5 @@
 Npm.depends({
-    'mailgun-js': '0.3.3'
+    'mailgun-js': '0.4.5'
 });
 
 Package.describe({
