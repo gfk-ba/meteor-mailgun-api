@@ -7,6 +7,8 @@ Mailgun API - Mailgun api implementation for Meteor.
 Description
 ------------
 Meteor wrapper for [mailgun-js](https://www.npmjs.org/package/mailgun-js)
+This module wraps base functionality you'd want from the mailgun.api. Use this if you want to abstract away raw mailgun api useage.
+Feel free to add more wrapper methods and submit them via pull request.
 The instance of the npm module lives in Mailgun.api so use that for calling methods in https://github.com/1lobby/mailgun-js
 
 Installation
@@ -22,6 +24,18 @@ var options = {
     domain: 'www.pleasegiveuslotsofmoney.com'
 }
 var NigerianPrinceGun = new Mailgun(options);
+NigerianPrinceGun.send({
+                               'to': 'test@test.com',
+                               'from': 'no-reply@test.com',
+                               'html': '<html><head></head><body>This is a test</body></html>',
+                               'text': 'This is a test',
+                               'subject': 'testSubject',
+                               'tags': [
+                                   'some',
+                                   'test',
+                                   'tags'
+                               ]
+                           });
 ```
 
 The reference to the npm package lives in .api for example:
