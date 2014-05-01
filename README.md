@@ -49,6 +49,35 @@ The reference to the npm package lives in .api for example:
 
 See the mailgun-js npm page for more info [mailgun-js](https://www.npmjs.org/package/mailgun-js)
 
+API Documentation
+------------
+
+## constructor(options)
+
+Constructs a new instance of the mailgun wrapper
+
+### Params:
+
+* **Object** *options*
+* **String** *options.apiKey* The api key to use in communication with mailgun
+* **String** *options.domain* The domain to use in communication with mailgun
+
+## send(emailObject, options)
+
+Sends the email to mailgun
+
+### Params:
+
+* **Object** *emailObject*
+* **String** *emailObject.to* Address to which to sent the email
+* **String** *emailObject.cc* Address to which to cc the email
+* **String** *emailObject.bcc* Address to which to bcc the email
+* **String** *[emailObject.html]* The html version of the email
+* **String** *[emailObject.text]* The text version of the email
+* **String** *[emailObject.subject]* the subject of the email
+* **Array** *[emailObject.tags]* Tags to sent to mailgun
+* **Object** *options* [options={}] The options to use for sending the email
+* **String** *[options.testmode]* Adds mailgun testmode parameter
 
 Note
 -----
