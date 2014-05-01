@@ -21,9 +21,9 @@ Mailgun = (function () {
      * Sends the email to mailgun
      *
      * @param {Object} emailObject
-     * @param {String} emailObject.to Address to which to sent the email
-     * @param {String} emailObject.cc Address to which to cc the email
-     * @param {String} emailObject.bcc Address to which to bcc the email
+     * @param {String} [emailObject.to] Address to which to sent the email
+     * @param {String} [emailObject.cc] Address to which to cc the email
+     * @param {String} [emailObject.bcc] Address to which to bcc the email
      * @param {String} [emailObject.html] The html version of the email
      * @param {String} [emailObject.text] The text version of the email
      * @param {String} [emailObject.subject] the subject of the email
