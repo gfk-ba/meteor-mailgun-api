@@ -1,3 +1,4 @@
+//<editor-fold desc="Instantiation tests">
 Tinytest.add('MeteorMailgunAPI - Test API', function (test) {
     var testMailgun = new Mailgun({});
     test.equal(
@@ -20,7 +21,9 @@ Tinytest.add('MeteorMailgunAPI - When given options - Expect api options to be s
         'Expect Mailgun.api to be a object'
     );
 });
+//</editor-fold>
 
+//<editor-fold desc="Send tests">
 Tinytest.add('MeteorMailgunAPI - Send - Expect options to be passed', function (test) {
     var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
     var givenData = {};
@@ -149,3 +152,5 @@ Tinytest.add('MeteorMailgunAPI - Send - Call callback with right arguments', fun
 
     testMailgun.send({}, testCb);
 });
+//</editor-fold>
+
