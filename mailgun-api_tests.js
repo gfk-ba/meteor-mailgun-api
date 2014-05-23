@@ -1,156 +1,158 @@
+(function () {
+    'use strict';
 //<editor-fold desc="Instantiation tests">
-Tinytest.add('Mailgun - Test API', function (test) {
-    var testMailgun = new Mailgun({});
-    test.equal(
-        typeof testMailgun.api,
-        'object',
-        'Expect Mailgun.api to be a object'
-    );
-});
+    Tinytest.add('Mailgun - Test API', function (test) {
+        var testMailgun = new Mailgun({});
+        test.equal(
+            typeof testMailgun.api,
+            'object',
+            'Expect Mailgun.api to be a object'
+        );
+    });
 
-Tinytest.add('Mailgun - When given options - Expect api options to be set', function (test) {
-    var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-    test.equal(
-        testMailgun.api.apiKey,
-        'Test',
-        'Expect Mailgun.api to be a object'
-    );
-    test.equal(
-        testMailgun.api.domain,
-        'mail.somewhere.com',
-        'Expect Mailgun.api to be a object'
-    );
-});
+    Tinytest.add('Mailgun - When given options - Expect api options to be set', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+        test.equal(
+            testMailgun.api.apiKey,
+            'Test',
+            'Expect Mailgun.api to be a object'
+        );
+        test.equal(
+            testMailgun.api.domain,
+            'mail.somewhere.com',
+            'Expect Mailgun.api to be a object'
+        );
+    });
 //</editor-fold>
 
 //<editor-fold desc="Send tests">
-Tinytest.add('Mailgun - Send - Expect options to be passed', function (test) {
-    var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-    var givenData = {};
+    Tinytest.add('Mailgun - Send - Expect options to be passed', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+        var givenData = {};
 
-    var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
-    testMailgun.api.messages().__proto__.send = function (data) {
-        givenData = data;
-        actualSend.apply(this, arguments);
-    };
+        var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
+        testMailgun.api.messages().__proto__.send = function (data) {
+            givenData = data;
+            actualSend.apply(this, arguments);
+        };
 
-    testMailgun.send({from:'test@test.com'}, {
-        testmode: true
+        testMailgun.send({from:'test@test.com'}, {
+            testmode: true
+        });
+
+        test.equal(
+            givenData['o:testmode'],
+            true,
+            'Expect o:testmode to be true'
+        );
     });
 
-    test.equal(
-        givenData['o:testmode'],
-        true,
-        'Expect o:testmode to be true'
-    );
-});
+    Tinytest.add('Mailgun - Send - Should construct a proper message', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+        var givenData = {};
 
-Tinytest.add('Mailgun - Send - Should construct a proper message', function (test) {
-    var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-    var givenData = {};
+        var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
+        testMailgun.api.messages().__proto__.send = function (data) {
+            givenData = data;
+            actualSend.apply(this, arguments);
+        };
 
-    var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
-    testMailgun.api.messages().__proto__.send = function (data) {
-        givenData = data;
-        actualSend.apply(this, arguments);
-    };
+        var testPayload = {
+            "to": "test@test.com",
+            "from": "no-reply@test.com",
+            "html": "<html><head></head><body>This is a test</body></html>",
+            "text": "This is a test",
+            "subject": "testSubject",
+            "tags": [
+                "some",
+                "test",
+                "tags"
+            ]
+        };
 
-    var testPayload = {
-        "to": "test@test.com",
-        "from": "no-reply@test.com",
-        "html": "<html><head></head><body>This is a test</body></html>",
-        "text": "This is a test",
-        "subject": "testSubject",
-        "tags": [
-            "some",
-            "test",
-            "tags"
-        ]
-    };
+        testMailgun.send(_.clone(testPayload));
 
-    testMailgun.send(_.clone(testPayload));
-
-    test.equal(
-        givenData.to,
-        testPayload.to,
-        'Should pass to'
-    );
-
-    test.equal(
-        givenData.cc,
-        undefined,
-        'Should not add a cc when not given'
-    );
-
-    test.equal(
-        givenData.bcc,
-        undefined,
-        'Should not add a bcc when not given'
-    );
-
-    test.equal(
-        givenData.from,
-        testPayload.from,
-        'Should pass from'
-    );
-
-
-
-    test.equal(
-        givenData.html,
-        testPayload.html,
-        'Should pass html'
-    );
-
-    test.equal(
-        givenData.text,
-        testPayload.text,
-        'Should pass text'
-    );
-
-    test.equal(
-        givenData.subject,
-        testPayload.subject,
-        'Should pass subject'
-    );
-
-    test.equal(
-        givenData['o:tag'],
-        testPayload.tags,
-        'Should pass tags'
-    );
-});
-
-Tinytest.add('Mailgun - Send - Call callback with right arguments', function (test) {
-    var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-    var testError = {
-        foo: 'bar'
-    };
-
-    var testResponse = {
-        id: '<123@mailgun.org>',
-        message: 'Queued. Thank you'
-    };
-
-    var testCb = function (error, response) {
         test.equal(
-            error,
-            testError,
-            'Should pass given error to callback'
+            givenData.to,
+            testPayload.to,
+            'Should pass to'
         );
 
         test.equal(
-            response,
-            testResponse,
-            'Should pass given response to callback'
+            givenData.cc,
+            undefined,
+            'Should not add a cc when not given'
         );
-    };
 
-    testMailgun.api.messages().__proto__.send = function (data, cb) {
-        cb(testError, testResponse);
-    };
+        test.equal(
+            givenData.bcc,
+            undefined,
+            'Should not add a bcc when not given'
+        );
 
-    testMailgun.send({}, testCb);
-});
+        test.equal(
+            givenData.from,
+            testPayload.from,
+            'Should pass from'
+        );
+
+
+
+        test.equal(
+            givenData.html,
+            testPayload.html,
+            'Should pass html'
+        );
+
+        test.equal(
+            givenData.text,
+            testPayload.text,
+            'Should pass text'
+        );
+
+        test.equal(
+            givenData.subject,
+            testPayload.subject,
+            'Should pass subject'
+        );
+
+        test.equal(
+            givenData['o:tag'],
+            testPayload.tags,
+            'Should pass tags'
+        );
+    });
+
+    Tinytest.add('Mailgun - Send - Call callback with right arguments', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+        var testError = {
+            foo: 'bar'
+        };
+
+        var testResponse = {
+            id: '<123@mailgun.org>',
+            message: 'Queued. Thank you'
+        };
+
+        var testCb = function (error, response) {
+            test.equal(
+                error,
+                testError,
+                'Should pass given error to callback'
+            );
+
+            test.equal(
+                response,
+                testResponse,
+                'Should pass given response to callback'
+            );
+        };
+
+        testMailgun.api.messages().__proto__.send = function (data, cb) {
+            cb(testError, testResponse);
+        };
+
+        testMailgun.send({}, testCb);
+    });
 //</editor-fold>
-
+} ());

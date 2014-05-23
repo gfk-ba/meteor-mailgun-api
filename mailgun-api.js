@@ -1,6 +1,7 @@
 var mailgunJS = Npm.require('mailgun-js');
 
 Mailgun = (function () {
+    'use strict';
     /***
      * Constructs a new instance of the mailgun wrapper
      * @param {Object} options
