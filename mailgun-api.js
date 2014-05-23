@@ -32,7 +32,7 @@ Mailgun = (function () {
      * @param {String} [options.testmode] Adds mailgun testmode parameter
      * @returns {Object} result
      * @returns {Object} result.error Object containing the error given during the sending of the mail
-     * @returns {String} result.message response returned by email provider wrapper
+     * @returns {String} result.response response returned by email provider wrapper
      */
     constructor.prototype.send = function (emailObject, options) {
         var future = new Future();
@@ -48,8 +48,9 @@ Mailgun = (function () {
             delete emailObject.tags;
         }
 
-        this.api.messages().send(emailObject, function (err, body) {
-            future.return({error: err, message: body});
+        this.api.messages().send(emailObject, function (error, response) {
+            response = response || {};
+            future.return({error: error, response: response});
         });
 
         return future;
