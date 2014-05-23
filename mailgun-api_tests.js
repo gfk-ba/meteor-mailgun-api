@@ -117,3 +117,35 @@ Tinytest.add('MeteorMailgunAPI - Send - Should construct a proper message', func
         'Should pass tags'
     );
 });
+
+Tinytest.add('MeteorMailgunAPI - Send - Call callback with right arguments', function (test) {
+    var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+    var testError = {
+        foo: 'bar'
+    };
+
+    var testResponse = {
+        id: '<123@mailgun.org>',
+        message: 'Queued. Thank you'
+    };
+
+    var testCb = function (error, response) {
+        test.equal(
+            error,
+            testError,
+            'Should pass given error to callback'
+        );
+
+        test.equal(
+            response,
+            testResponse,
+            'Should pass given response to callback'
+        );
+    };
+
+    testMailgun.api.messages().__proto__.send = function (data, cb) {
+        cb(testError, testResponse);
+    };
+
+    testMailgun.send({}, testCb);
+});
