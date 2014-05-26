@@ -23,16 +23,6 @@
             'Expect Mailgun.api to be a object'
         );
     });
-
-    Tinytest.add('Mailgun - When given options - Mailgun.api should be a instanceof npm mailgun', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        var mailgunJS = Npm.require('mailgun-js');
-        test.instanceOf(
-            testMailgun.api,
-            mailgunJS,
-            'Expect Mailgun.api to be instanceof mailgun-js'
-        );
-    });
 //</editor-fold>
 
 //<editor-fold desc="Send tests">
