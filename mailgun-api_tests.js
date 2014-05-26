@@ -155,4 +155,99 @@
         testMailgun.send({}, testCb);
     });
 //</editor-fold>
+
+//<editor-fold desc="getEvents tests">
+    Tinytest.add('Mailgun - getEvents - Should have constants for the different events', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+        test.equal(
+            typeof testMailgun.CONST,
+            'object',
+            'Expect Mailgun.api to have a CONST object in prototype'
+        );
+
+        test.equal(
+            typeof testMailgun.CONST.EVENTTYPES,
+            'object',
+            'Expect Mailgun.api to have a CONST.EVENTTYPES object in prototype'
+        );
+
+        test.isTrue(
+            _.size(testMailgun.CONST.EVENTTYPES) > 0,
+            'CONST.EVENTTYPES object to not be empty'
+        );
+    });
+
+    Tinytest.add('Mailgun - getEvents - Should call api.get', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
+            testFilter = {
+                test: 123
+            },
+            oldGet = testMailgun.api.get,
+            calledWith;
+
+        testMailgun.api.get = function () {
+            calledWith = arguments;
+            oldGet.apply(this, arguments);
+        };
+
+        testMailgun.getEvents(testFilter);
+
+        test.equal(
+            calledWith[0],
+            '/events',
+            'Should pass /events as first argument'
+        );
+
+        test.equal(
+            calledWith[1],
+            testFilter,
+            'Should pass given filter object as filter'
+        );
+
+        testMailgun.getEvents();
+
+        test.equal(
+            calledWith[1],
+            {},
+            'Should pass empty object as filter when no filter is given as argument'
+        );
+    });
+
+    Tinytest.add('Mailgun - getEvents - Future should return api response', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
+            testError = new Error(['Testing errors']),
+            testResponse = {message: 'BlaBlaBla!', foo: 'Bar!'};
+
+        testMailgun.api.get = function (endPoint, filter, cb) {
+            cb(testError);
+        };
+
+        var result1 = testMailgun.getEvents({}).wait();
+
+        test.equal(
+            result1,
+            {
+                error: testError,
+                response: undefined
+            },
+            'Should return the given error'
+        );
+
+        testMailgun.api.get = function (endPoint, filter, cb) {
+            cb(undefined, testResponse);
+        };
+
+        var result2 = testMailgun.getEvents({}).wait();
+
+        test.equal(
+            result2,
+            {
+                error: undefined,
+                response: testResponse
+            },
+            'Should return response given by the api'
+        );
+    });
+
+//</editor-fold>
 } ());

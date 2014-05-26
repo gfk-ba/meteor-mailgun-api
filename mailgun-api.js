@@ -57,5 +57,36 @@ Mailgun = (function () {
         return future;
     };
 
+    /***
+     * Checks events for the given filter.
+     *
+     * @param filter [filter={}] The filter to use for retrieving the events
+     * @returns {Future}
+     */
+    constructor.prototype.getEvents = function (filter) {
+        var future = new Future();
+        filter = filter || {};
+
+        this.api.get('/events', filter, function (err, response) {
+            future.return({error: err, response: response});
+        });
+
+        return future;
+    };
+
+    constructor.prototype.CONST = {
+        EVENTTYPES: {
+            ACCEPTED: 'accepted',
+            REJECTED: 'rejected',
+            DELIVERED: 'delivered',
+            FAILED: 'failed',
+            OPENED: 'openend',
+            CLICKED: 'clicked',
+            UNSUBSCRIBED: 'unsubscribed',
+            COMPLAINED: 'complained',
+            STORED: 'stored'
+        }
+    };
+
     return constructor;
 }());
