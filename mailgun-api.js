@@ -57,18 +57,32 @@ Mailgun = (function () {
         return future;
     };
 
-    constructor.prototype._convertBool = function (value) {
-        if (!_.isUndefined(value)) {
-            if (_.isBoolean(value)) {
-                value = value ? 'yes' : 'no';
-            } else if (_.isString(value)) {
-                value = value === 'no' ? 'no' : 'yes';
-            } else {
-                value = !!value;
-            }
-        }
+    /***
+     * Checks if a key exists if so replaces the value with a string valued 'yes' or 'no'
+     *
+     * @param {Object} obj The object that holds the keys to convert
+     * @param {Array||String} keys the key(s) to convert to a value mailgun understands
+     * @private
+     */
+    constructor.prototype._convertBooleans = function (obj, keys) {
+        var value;
+        keys = _.isArray(keys) ? keys : [keys];
 
-        return value;
+
+        _.each(keys, function (key) {
+            value = obj[key];
+
+            if (!_.isUndefined(value)) {
+                if (_.isBoolean(value)) {
+                    value = value ? 'yes' : 'no';
+                } else if (_.isString(value)) {
+                    value = value === 'no' ? 'no' : 'yes';
+                } else {
+                    value = !!value;
+                }
+                obj[key] = value;
+            }
+        });
     };
 
     /***
@@ -80,31 +94,20 @@ Mailgun = (function () {
      * @returns {Future}
      */
     constructor.prototype.getEvents = function (filter) {
-        var future = new Future(),
-            ascending, pretty;
+        var future = new Future();
         filter = filter || {};
 
         if (filter.beginDate) {
-            filter.begin = filter.beginDate / 1000;
+            filter.begin = new Date(filter.beginDate) / 1000;
             delete filter.beginDate;
         }
 
         if (filter.endDate) {
-            filter.end = filter.endDate / 1000;
+            filter.end = new Date(filter.endDate) / 1000;
             delete filter.endDate;
         }
 
-        ascending = this._convertBool(filter.ascending);
-
-        if (ascending) {
-            filter.ascending = ascending;
-        }
-
-        pretty = this._convertBool(filter.pretty);
-
-        if (pretty) {
-            filter.pretty = pretty;
-        }
+        this._convertBooleans(filter, ['ascending', 'pretty']);
 
         this.api.events().get(filter, function (error, response) {
             response = response || {};
