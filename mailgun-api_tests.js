@@ -214,7 +214,7 @@
                 items: [
                     {
                         event: testMailgun.CONST.EVENTTYPES.ACCEPTED,
-                        timestamp: 14234991213.00
+                        timestamp: '14234991213.01'
                     }
                 ]
             };
@@ -250,7 +250,7 @@
         );
 
         test.equal(
-            result2.items[0].date / 1000,
+            (result2.items[0].date / 1000).toString(),
             testResponse.items[0].timestamp,
             'Should add a date object to the event'
         );
@@ -281,13 +281,13 @@
 
         test.equal(
             actualFilter.begin,
-            beginDate / 1000,
+            (beginDate / 1000).toString(),
             'Should add a begin property to the filter passed to mailgun-js'
         );
 
         test.equal(
             actualFilter.end,
-            endDate / 1000,
+            (endDate / 1000).toString(),
             'Should add a begin property to the filter passed to mailgun-js'
         );
 
