@@ -57,18 +57,62 @@ Mailgun = (function () {
         return future;
     };
 
+    constructor.prototype._convertBool = function (value) {
+        if (!_.isUndefined(value)) {
+            if (_.isBoolean(value)) {
+                value = value ? 'yes' : 'no';
+            } else if (_.isString(value)) {
+                value = value === 'no' ? 'no' : 'yes';
+            } else {
+                value = !!value;
+            }
+        }
+
+        return value;
+    };
+
     /***
      * Checks events for the given filter.
-     *
-     * @param filter [filter={}] The filter to use for retrieving the events
+     * @param filter [filter={}] The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
+     * @param {Date} [filter.beginDate]
+     * @param {Date} [filter.endDate]
+     * @param {Boolean} [filter.ascending=false]
      * @returns {Future}
      */
     constructor.prototype.getEvents = function (filter) {
-        var future = new Future();
+        var future = new Future(),
+            ascending, pretty;
         filter = filter || {};
 
-        this.api.get('/events', filter, function (err, response) {
-            future.return({error: err, response: response});
+        if (filter.beginDate) {
+            filter.begin = filter.beginDate / 1000;
+            delete filter.beginDate;
+        }
+
+        if (filter.endDate) {
+            filter.end = filter.endDate / 1000;
+            delete filter.endDate;
+        }
+
+        ascending = this._convertBool(filter.ascending);
+
+        if (ascending) {
+            filter.ascending = ascending;
+        }
+
+        pretty = this._convertBool(filter.pretty);
+
+        if (pretty) {
+            filter.pretty = pretty;
+        }
+
+        this.api.events().get(filter, function (error, response) {
+            response = response || {};
+            var items = response.items || [];
+            _.each(response.items, function (item) {
+                item.date = new Date(item.timestamp * 1000);
+            });
+            future.return({error: error, items: items});
         });
 
         return future;

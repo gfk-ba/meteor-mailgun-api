@@ -185,7 +185,7 @@
             oldGet = testMailgun.api.get,
             calledWith;
 
-        testMailgun.api.get = function () {
+        testMailgun.api.events().__proto__.get = function () {
             calledWith = arguments;
             oldGet.apply(this, arguments);
         };
@@ -194,31 +194,32 @@
 
         test.equal(
             calledWith[0],
-            '/events',
-            'Should pass /events as first argument'
-        );
-
-        test.equal(
-            calledWith[1],
-            testFilter,
+            {"test":123},
             'Should pass given filter object as filter'
         );
 
         testMailgun.getEvents();
 
         test.equal(
-            calledWith[1],
+            calledWith[0],
             {},
             'Should pass empty object as filter when no filter is given as argument'
         );
     });
 
-    Tinytest.add('Mailgun - getEvents - Future should return api response', function (test) {
+    Tinytest.add('Mailgun - getEvents - Future should return the events in the response', function (test) {
         var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
             testError = new Error(['Testing errors']),
-            testResponse = {message: 'BlaBlaBla!', foo: 'Bar!'};
+            testResponse = {
+                items: [
+                    {
+                        event: testMailgun.CONST.EVENTTYPES.ACCEPTED,
+                        timestamp: 14234991213.00
+                    }
+                ]
+            };
 
-        testMailgun.api.get = function (endPoint, filter, cb) {
+        testMailgun.api.events().__proto__.get = function (filter, cb) {
             cb(testError);
         };
 
@@ -228,12 +229,12 @@
             result1,
             {
                 error: testError,
-                response: undefined
+                items: []
             },
             'Should return the given error'
         );
 
-        testMailgun.api.get = function (endPoint, filter, cb) {
+        testMailgun.api.events().__proto__.get = function (filter, cb) {
             cb(undefined, testResponse);
         };
 
@@ -243,9 +244,171 @@
             result2,
             {
                 error: undefined,
-                response: testResponse
+                items: testResponse.items
             },
-            'Should return response given by the api'
+            'Should return items in the response given by the api'
+        );
+
+        test.equal(
+            result2.items[0].date / 1000,
+            testResponse.items[0].timestamp,
+            'Should add a date object to the event'
+        );
+    });
+
+    Tinytest.add('Mailgun - getEvents - When the given filter contains a beginDate and endDate ', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
+            testResponse = {
+                items: [
+                    {
+                        event: testMailgun.CONST.EVENTTYPES.ACCEPTED
+                    }
+                ]
+            },
+            beginDate = new Date() - 1000,
+            endDate = new Date(),
+            actualFilter;
+
+        testMailgun.api.events().__proto__.get = function (filter, cb) {
+            actualFilter = filter;
+            cb(undefined, testResponse);
+        };
+
+        var result = testMailgun.getEvents({
+            beginDate: beginDate,
+            endDate: new Date()
+        }).wait();
+
+        test.equal(
+            actualFilter.begin,
+            beginDate / 1000,
+            'Should add a begin property to the filter passed to mailgun-js'
+        );
+
+        test.equal(
+            actualFilter.end,
+            endDate / 1000,
+            'Should add a begin property to the filter passed to mailgun-js'
+        );
+
+        test.isUndefined(
+            actualFilter.beginDate,
+            'Should not pass beginDate trough to mailgun-js'
+        );
+
+        test.isUndefined(
+            actualFilter.endDate,
+            'Should not pass beginDate trough to mailgun-js'
+        );
+    });
+
+    Tinytest.add('Mailgun - getEvents - When the given filter contains a value for ascending ', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
+            valueForAscending;
+
+        testMailgun.api.events().__proto__.get = function (filter, cb) {
+            valueForAscending = filter.ascending;
+            cb();
+        };
+
+        testMailgun.getEvents({
+            ascending: true
+        }).wait();
+
+
+        test.equal(
+            valueForAscending,
+            'yes',
+            'When ascending is true it should pass yes to mailgun'
+        );
+
+        testMailgun.getEvents({
+            ascending: false
+        }).wait();
+
+
+        test.equal(
+            valueForAscending,
+            'no',
+            'When ascending is false it should pass no to mailgun'
+        );
+
+        testMailgun.getEvents({
+            ascending: 'no'
+        }).wait();
+
+
+        test.equal(
+            valueForAscending,
+            'no',
+            'When ascending is no it should pass no to mailgun'
+        );
+
+
+        testMailgun.getEvents({
+            ascending: 'yes'
+        }).wait();
+
+
+        test.equal(
+            valueForAscending,
+            'yes',
+            'When ascending is yes it should pass yes to mailgun'
+        );
+    });
+
+    Tinytest.add('Mailgun - getEvents - When the given filter contains a value for pretty ', function (test) {
+        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
+            valueForPretty;
+
+        testMailgun.api.events().__proto__.get = function (filter, cb) {
+            valueForPretty = filter.pretty;
+            cb();
+        };
+
+        testMailgun.getEvents({
+            pretty: true
+        }).wait();
+
+
+        test.equal(
+            valueForPretty,
+            'yes',
+            'When pretty is true it should pass yes to mailgun'
+        );
+
+        testMailgun.getEvents({
+            pretty: false
+        }).wait();
+
+
+        test.equal(
+            valueForPretty,
+            'no',
+            'When pretty is false it should pass no to mailgun'
+        );
+
+        testMailgun.getEvents({
+            pretty: 'no'
+        }).wait();
+
+
+        test.equal(
+            valueForPretty,
+            'no',
+            'When pretty is no it should pass no to mailgun'
+        );
+
+
+        testMailgun.getEvents({
+            pretty: 'yes'
+        }).wait();
+
+
+        test.equal(
+            valueForPretty,
+            'yes',
+            'When pretty is yes it should pass yes to mailgun'
         );
     });
 

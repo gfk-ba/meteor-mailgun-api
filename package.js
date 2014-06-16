@@ -1,6 +1,6 @@
-Npm.depends({
-    'mailgun-js': '0.4.5'
-});
+    Npm.depends({
+        'mailgun-js': '0.4.13'
+    });
 
 Package.describe({
     summary: "Mailgun API - Mailgun api implementation for Meteor."
