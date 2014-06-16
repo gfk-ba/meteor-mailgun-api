@@ -11,6 +11,8 @@ This module wraps base functionality you'd want from the mailgun.api. Use this i
 Feel free to add more wrapper methods and submit them via pull request.
 The instance of the npm module lives in Mailgun.api so use that for calling methods in https://github.com/1lobby/mailgun-js
 
+There is a example application deployed at [meteor.com](http://mailgun-api-example.meteor.com) [source](https://github.com/gfk-ba/meteor-mailgun-api-example)
+
 Installation
 ------------
 Install this package using [Meteorite](https://github.com/oortcloud/meteorite/):
