@@ -54,13 +54,16 @@ See the mailgun-js npm page for more info [mailgun-js](https://www.npmjs.org/pac
 API Documentation
 ------------
 
+
+<!-- Start mailgun-api.js -->
+
 ## constructor(options)
 
 Constructs a new instance of the mailgun wrapper
 
-### Params:
+### Params: 
 
-* **Object** *options*
+* **Object** *options* 
 * **String** *options.apiKey* The api key to use in communication with mailgun
 * **String** *options.domain* The domain to use in communication with mailgun
 
@@ -68,18 +71,30 @@ Constructs a new instance of the mailgun wrapper
 
 Sends the email to mailgun
 
-### Params:
+### Params: 
 
-* **Object** *emailObject*
-* **String** *emailObject.to* Address to which to sent the email
-* **String** *emailObject.cc* Address to which to cc the email
-* **String** *emailObject.bcc* Address to which to bcc the email
+* **Object** *emailObject* 
+* **String** *[emailObject.to]* Address to which to sent the email
+* **String** *[emailObject.cc]* Address to which to cc the email
+* **String** *[emailObject.bcc]* Address to which to bcc the email
 * **String** *[emailObject.html]* The html version of the email
 * **String** *[emailObject.text]* The text version of the email
 * **String** *[emailObject.subject]* the subject of the email
 * **Array** *[emailObject.tags]* Tags to sent to mailgun
 * **Object** *options* [options={}] The options to use for sending the email
 * **String** *[options.testmode]* Adds mailgun testmode parameter
+
+## getEvents([filter={}])
+
+Checks events for the given filter.
+
+### Params: 
+
+* **filter** *[filter={}]* The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
+* **Date|String** *[filter.beginDate]* The beginning of the time range to select log records from. By default it is the time of the request
+* **Date|String** *[filter.endDate]* The end of the time range and the direction of the log record traversal. If end is less than begin, then traversal is performed in the timestamp descending order, otherwise in timestamp ascending order. By default, if ascending is yes, then it is a date in the distant future, otherwise a date in the distant past.
+* **Boolean** *[filter.ascending=false]* The direction of log record traversal. If end is also specified, then the relation between begin and end should agree with the ascending value, otherwise an error will be returned. The default value is deduced from the begin and end relation. If end is not specified, then the value is no, effectively defining traversal direction from begin, to the past, until the end of time.
+* **Boolean** *[filter.pretty=true]* Defaults to true on the server
 
 Note
 -----
