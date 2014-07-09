@@ -1,7 +1,8 @@
 (function () {
     'use strict';
     Npm.depends({
-        'mailgun-js': '0.4.13'
+        'mailgun-js': '0.5.1',
+        'mkdirp': '0.3.5'
     });
 
     Package.describe({
@@ -17,7 +18,7 @@
     });
 
     Package.on_test(function (api) {
-        api.use(['mailgun-api', 'tinytest']);
+        api.use(['mailgun-api', 'tinytest', 'munit', 'sinon', 'chai']);
 
         api.add_files('mailgun-api_tests.js', ['server']);
     });

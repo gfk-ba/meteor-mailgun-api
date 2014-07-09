@@ -1,5 +1,6 @@
 (function () {
     'use strict';
+
 //<editor-fold desc="Instantiation tests">
     Tinytest.add('Mailgun - Test API', function (test) {
         var testMailgun = new Mailgun({});
@@ -154,6 +155,65 @@
 
         testMailgun.send({}, testCb);
     });
+
+    Tinytest.add('Mailgun - Send - Should save email to disk when options.saveEmailTo is defined', function (test) {
+		var sandbox = sinon.sandbox.create();
+		var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+        var givenData = {};
+
+
+        var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
+        testMailgun.api.messages().__proto__.send = function (data) {
+            givenData = data;
+            actualSend.apply(this, arguments);
+        };
+
+        var fs = Npm.require('fs'),
+            mkdirp = Npm.require('mkdirp');
+
+
+        var writeFile = sandbox.stub(fs, 'writeFile', function (target, content, cb) {
+            cb();
+        });
+
+
+        var mkdirpStub = sandbox.stub(mkdirp, 'mkdirp', function (nothing, cb) {
+            cb(null, null);
+        });
+
+        var testPayload = {
+            "to": "test@test.com",
+            "from": "no-reply@test.com",
+            "html": "<html><head></head><body>This is a test</body></html>",
+            "text": "This is a test",
+            "subject": "testSubject",
+            "tags": [
+                "some",
+                "test",
+                "tags"
+            ]
+        };
+
+        var testOptions = {};
+
+        var testOptions = {
+            saveEmailTo: '/some/test/dir/bla.html'
+        };
+
+        testMailgun.send(_.clone(testPayload), testOptions);
+
+		var expected = testOptions.saveEmailTo.split('/');
+		expected.pop();
+		expected = expected.join('/');
+
+        expect(mkdirpStub.args[0][0]).to.equal(expected);
+		expect(writeFile.args[0][0]).to.equal(testOptions.saveEmailTo);
+		expect(writeFile.args[0][1]).to.equal(testPayload.html);
+
+		sandbox.restore();
+    });
+
+
 //</editor-fold>
 
 //<editor-fold desc="getEvents tests">

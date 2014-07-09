@@ -4,6 +4,11 @@ Mailgun API
 
 Mailgun API - Mailgun api implementation for Meteor.
 
+
+Release notes
+-------------
+**v0.5.0** - Send no longer returns a future
+
 Description
 ------------
 Meteor wrapper for [mailgun-js](https://www.npmjs.org/package/mailgun-js)
@@ -83,6 +88,7 @@ Sends the email to mailgun
 * **Array** *[emailObject.tags]* Tags to sent to mailgun
 * **Object** *options* [options={}] The options to use for sending the email
 * **String** *[options.testmode]* Adds mailgun testmode parameter
+* **String** *[options.saveEmailTo]* Specifies the location to save a copy of the html email to. Tries to create the directories if they don't exist yet
 
 ## getEvents([filter={}])
 

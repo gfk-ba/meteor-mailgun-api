@@ -1,7 +1,6 @@
-var mailgunJS = Npm.require('mailgun-js');
-
 Mailgun = (function () {
     'use strict';
+
     /***
      * Constructs a new instance of the mailgun wrapper
      * @param {Object} options
@@ -10,13 +9,13 @@ Mailgun = (function () {
      * @constructor
      */
     var constructor = function (options) {
+        var mailgunJS = Npm.require('mailgun-js');
+
         this.api = new mailgunJS({
             apiKey: options.apiKey,
             domain: options.domain
         });
     };
-
-    var Future = Npm.require('fibers/future');
 
     /***
      * Sends the email to mailgun
@@ -31,12 +30,18 @@ Mailgun = (function () {
      * @param {Array} [emailObject.tags] Tags to sent to mailgun
      * @param {Object} options [options={}] The options to use for sending the email
      * @param {String} [options.testmode] Adds mailgun testmode parameter
+     * @param {String} [options.saveEmailTo] Specifies the location to save a copy of the html email to. Tries to create the directories if they don't exist yet
      * @returns {Object} result
      * @returns {Object} result.error Object containing the error given during the sending of the mail
      * @returns {String} result.response response returned by email provider wrapper
      */
     constructor.prototype.send = function (emailObject, options) {
-        var future = new Future();
+        var Future = Npm.require('fibers/future'),
+            fs = Npm.require('fs'),
+            mkdirpModule = Npm.require('mkdirp'),
+            writeFile = Future.wrap(fs.writeFile),
+            mkdirp = Future.wrap(mkdirpModule.mkdirp, 1),
+            errors = [], result;
 
         options = options || {};
 
@@ -44,17 +49,46 @@ Mailgun = (function () {
             emailObject['o:testmode'] = true;
         }
 
+        if (options.saveEmailTo) {
+            var targetDir = options.saveEmailTo.split('/');
+            targetDir.pop();
+            targetDir = targetDir.join('/');
+
+            var mkdirResult = mkdirp(targetDir).wait();
+
+            if (mkdirResult === null) {
+                writeFile(options.saveEmailTo , emailObject.html).wait();
+            } else {
+                errors.push('Error creating directories! Errorcode: ' + mkdirResult.code + ' path: ' + mkdirResult.path);
+            }
+        }
+
         if(emailObject.tags) {
             emailObject['o:tag'] = _.clone(emailObject.tags);
             delete emailObject.tags;
         }
 
+        if (errors.length) {
+            result = {
+                error: errors.join(',')
+            };
+        } else {
+            result = this._send(emailObject).wait();
+        }
+
+        return result;
+    };
+
+    constructor.prototype._send = function (emailObject) {
+        var Future = Npm.require('fibers/future'),
+            fut = new Future();
+
         this.api.messages().send(emailObject, function (error, response) {
             response = response || {};
-            future.return({error: error, response: response});
+            fut.return({error: error, response: response});
         });
 
-        return future;
+        return fut;
     };
 
     /***
@@ -116,7 +150,8 @@ Mailgun = (function () {
      * @returns {Future}
      */
     constructor.prototype.getEvents = function (filter) {
-        var future = new Future(),
+        var Future = Npm.require('fibers/future'),
+            fut = new Future(),
             self = this;
         filter = filter || {};
 
@@ -138,10 +173,10 @@ Mailgun = (function () {
             _.each(response.items, function (item) {
                 item.date = self._convertTimeStringToDate(item.timestamp);
             });
-            future.return({error: error, items: items});
+            fut.return({error: error, items: items});
         });
 
-        return future;
+        return fut;
     };
 
     constructor.prototype.CONST = {
