@@ -1,476 +1,320 @@
 (function () {
     'use strict';
-
 //<editor-fold desc="Instantiation tests">
-    Tinytest.add('Mailgun - Test API', function (test) {
-        var testMailgun = new Mailgun({});
-        test.equal(
-            typeof testMailgun.api,
-            'object',
-            'Expect Mailgun.api to be a object'
-        );
-    });
+	describe('Mailgun - Test API', function () {
+		var sandbox;
+		beforeEach(function () {
+			sandbox = sinon.sandbox.create();
+		});
 
-    Tinytest.add('Mailgun - When given options - Expect api options to be set', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        test.equal(
-            testMailgun.api.apiKey,
-            'Test',
-            'Expect Mailgun.api to be a object'
-        );
-        test.equal(
-            testMailgun.api.domain,
-            'mail.somewhere.com',
-            'Expect Mailgun.api to be a object'
-        );
-    });
+		afterEach(function () {
+			sandbox.restore();
+		});
+
+		it('Should create a object for .api', function () {
+			var testMailgun = new Mailgun({});
+			expect(testMailgun.api).to.be.a('object');
+		});
+
+		it('Should put a instance of mailgun-js on api', function () {
+			var mailgunJs = Npm.require('mailgun-js'),
+				testMailgun = new Mailgun({});
+
+			expect(testMailgun.api).to.be.instanceof(mailgunJs);
+		});
+
+		it('When given options - expect apiKey to be set', function () {
+			var testApiKey = 'Test',
+				testMailgun = new Mailgun({ apiKey: testApiKey, domain: 'mail.somewhere.com'});
+			expect(testMailgun.api.apiKey).to.equal(testApiKey);
+		});
+
+		it('When given options - expect Domain to be set', function () {
+			var testApiKey = 'Test',
+				testDomain = 'mail.somewhere.com',
+				testMailgun = new Mailgun({ apiKey: testApiKey, domain: testDomain});
+			expect(testMailgun.api.domain).to.equal(testDomain);
+		});
+	});
 //</editor-fold>
 
 //<editor-fold desc="Send tests">
-    Tinytest.add('Mailgun - Send - Expect options to be passed', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        var givenData = {};
+	describe('Mailgun - #Send', function () {
+		var sandbox, instance;
+		beforeEach(function () {
+			sandbox = sinon.sandbox.create();
+			instance = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+		});
 
-        var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
-        testMailgun.api.messages().__proto__.send = function (data) {
-            givenData = data;
-            actualSend.apply(this, arguments);
-        };
+		afterEach(function () {
+			sandbox.restore();
+		});
 
-        testMailgun.send({from:'test@test.com'}, {
-            testmode: true
-        });
+		it('Expect testmode to be passed on', function () {
+			var send = sandbox.stub(instance, '_send').returns({wait: function () { return {response: '', error: ''};}});
 
-        test.equal(
-            givenData['o:testmode'],
-            true,
-            'Expect o:testmode to be true'
-        );
-    });
+			instance.send({from:'test@test.com'}, {
+				testmode: true
+			});
 
-    Tinytest.add('Mailgun - Send - Should construct a proper message', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        var givenData = {};
+			expect(send.args[0][0]['o:testmode']).to.equal(true);
+		});
 
-        var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
-        testMailgun.api.messages().__proto__.send = function (data) {
-            givenData = data;
-            actualSend.apply(this, arguments);
-        };
+		it('Should create a valid emailobject', function () {
+			var send = sandbox.stub(instance, '_send').returns({wait: function () { return {response: '', error: ''};}});
 
-        var testPayload = {
-            "to": "test@test.com",
-            "from": "no-reply@test.com",
-            "html": "<html><head></head><body>This is a test</body></html>",
-            "text": "This is a test",
-            "subject": "testSubject",
-            "tags": [
-                "some",
-                "test",
-                "tags"
-            ]
-        };
+			var testPayload = {
+				"to": "test@test.com",
+				"from": "no-reply@test.com",
+				"html": "<html><head></head><body>This is a test</body></html>",
+				"text": "This is a test",
+				"subject": "testSubject",
+				"tags": [
+					"some",
+					"test",
+					"tags"
+				]
+			};
 
-        testMailgun.send(_.clone(testPayload));
+			instance.send(_.clone(testPayload));
+			var expected = _.clone(testPayload);
 
-        test.equal(
-            givenData.to,
-            testPayload.to,
-            'Should pass to'
-        );
+			expected['o:tag'] = expected.tags;
+			delete expected.tags;
 
-        test.equal(
-            givenData.cc,
-            undefined,
-            'Should not add a cc when not given'
-        );
+			expect(send).to.have.been.calledWith(expected);
+		});
 
-        test.equal(
-            givenData.bcc,
-            undefined,
-            'Should not add a bcc when not given'
-        );
+		it('Should save email to disk when options.saveEmailTo is defined', function () {
+			var send = sandbox.stub(instance, '_send').returns({wait: function () { return {response: '', error: ''};}}),
+				fs = Npm.require('fs'),
+				mkdirp = Npm.require('mkdirp');
 
-        test.equal(
-            givenData.from,
-            testPayload.from,
-            'Should pass from'
-        );
+			var writeFile = sandbox.stub(fs, 'writeFile', function (target, content, cb) {
+				cb();
+			});
 
+			var mkdirpStub = sandbox.stub(mkdirp, 'mkdirp', function (nothing, cb) {
+				cb(null, null);
+			});
 
+			var testPayload = {
+				"to": "test@test.com",
+				"from": "no-reply@test.com",
+				"html": "<html><head></head><body>This is a test</body></html>",
+				"text": "This is a test",
+				"subject": "testSubject",
+				"tags": [
+					"some",
+					"test",
+					"tags"
+				]
+			};
 
-        test.equal(
-            givenData.html,
-            testPayload.html,
-            'Should pass html'
-        );
+			var testOptions = {
+				saveEmailTo: '/some/test/dir/bla.html'
+			};
 
-        test.equal(
-            givenData.text,
-            testPayload.text,
-            'Should pass text'
-        );
+			instance.send(_.clone(testPayload), testOptions);
 
-        test.equal(
-            givenData.subject,
-            testPayload.subject,
-            'Should pass subject'
-        );
+			var expected = testOptions.saveEmailTo.split('/');
+			expected.pop();
+			expected = expected.join('/');
 
-        test.equal(
-            givenData['o:tag'],
-            testPayload.tags,
-            'Should pass tags'
-        );
-    });
-
-    Tinytest.add('Mailgun - Send - Call callback with right arguments', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        var testError = {
-            foo: 'bar'
-        };
-
-        var testResponse = {
-            id: '<123@mailgun.org>',
-            message: 'Queued. Thank you'
-        };
-
-        var testCb = function (error, response) {
-            test.equal(
-                error,
-                testError,
-                'Should pass given error to callback'
-            );
-
-            test.equal(
-                response,
-                testResponse,
-                'Should pass given response to callback'
-            );
-        };
-
-        testMailgun.api.messages().__proto__.send = function (data, cb) {
-            cb(testError, testResponse);
-        };
-
-        testMailgun.send({}, testCb);
-    });
-
-    Tinytest.add('Mailgun - Send - Should save email to disk when options.saveEmailTo is defined', function (test) {
-		var sandbox = sinon.sandbox.create();
-		var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        var givenData = {};
-
-
-        var actualSend = testMailgun.api.messages().__proto__.send; //TODO: Find a better way of spying with tinytest
-        testMailgun.api.messages().__proto__.send = function (data) {
-            givenData = data;
-            actualSend.apply(this, arguments);
-        };
-
-        var fs = Npm.require('fs'),
-            mkdirp = Npm.require('mkdirp');
-
-
-        var writeFile = sandbox.stub(fs, 'writeFile', function (target, content, cb) {
-            cb();
-        });
-
-
-        var mkdirpStub = sandbox.stub(mkdirp, 'mkdirp', function (nothing, cb) {
-            cb(null, null);
-        });
-
-        var testPayload = {
-            "to": "test@test.com",
-            "from": "no-reply@test.com",
-            "html": "<html><head></head><body>This is a test</body></html>",
-            "text": "This is a test",
-            "subject": "testSubject",
-            "tags": [
-                "some",
-                "test",
-                "tags"
-            ]
-        };
-
-        var testOptions = {};
-
-        var testOptions = {
-            saveEmailTo: '/some/test/dir/bla.html'
-        };
-
-        testMailgun.send(_.clone(testPayload), testOptions);
-
-		var expected = testOptions.saveEmailTo.split('/');
-		expected.pop();
-		expected = expected.join('/');
-
-        expect(mkdirpStub.args[0][0]).to.equal(expected);
-		expect(writeFile.args[0][0]).to.equal(testOptions.saveEmailTo);
-		expect(writeFile.args[0][1]).to.equal(testPayload.html);
-
-		sandbox.restore();
-    });
-
-
+			expect(mkdirpStub).to.have.been.calledWith(expected);
+			expect(writeFile).to.have.been.calledWith(testOptions.saveEmailTo, testPayload.html);
+		});
+	});
 //</editor-fold>
 
 //<editor-fold desc="getEvents tests">
-    Tinytest.add('Mailgun - getEvents - Should have constants for the different events', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
-        test.equal(
-            typeof testMailgun.CONST,
-            'object',
-            'Expect Mailgun.api to have a CONST object in prototype'
-        );
+	describe('Mailgun - #getEvents', function () {
+		var sandbox, instance;
+		beforeEach(function () {
+			sandbox = sinon.sandbox.create();
+			instance = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+		});
 
-        test.equal(
-            typeof testMailgun.CONST.EVENTTYPES,
-            'object',
-            'Expect Mailgun.api to have a CONST.EVENTTYPES object in prototype'
-        );
+		afterEach(function () {
+			sandbox.restore();
+		});
 
-        test.isTrue(
-            _.size(testMailgun.CONST.EVENTTYPES) > 0,
-            'CONST.EVENTTYPES object to not be empty'
-        );
-    });
+		it('Should have constants for the different events', function () {
+			expect(instance.CONST).to.be.a('object');
+			expect(instance.CONST.EVENTTYPES).to.be.a('object');
+			expect(_.size(instance.CONST.EVENTTYPES)).to.be.at.least(1);
+		});
 
-    Tinytest.add('Mailgun - getEvents - Should call api.get', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
-            testFilter = {
-                test: 123
-            },
-            oldGet = testMailgun.api.get,
-            calledWith;
+		it('Should call api.get', function () {
+			var testFilter = {
+					test: 123
+				},
+				oldGet = instance.api.get,
+				calledWith;
 
-        testMailgun.api.events().__proto__.get = function () {
-            calledWith = arguments;
-            oldGet.apply(this, arguments);
-        };
+			//Manual stub because sinon doesn't like it when you try to stub something in __proto__
+			instance.api.events().__proto__.get = function () {
+				calledWith = arguments;
+				oldGet.apply(this, arguments);
+			};
 
-        testMailgun.getEvents(testFilter);
+			instance.getEvents(testFilter);
 
-        test.equal(
-            calledWith[0],
-            {"test":123},
-            'Should pass given filter object as filter'
-        );
+			expect(calledWith[0]).to.eql({"test":123});
 
-        testMailgun.getEvents();
+			instance.getEvents();
 
-        test.equal(
-            calledWith[0],
-            {},
-            'Should pass empty object as filter when no filter is given as argument'
-        );
-    });
+			expect(calledWith[0]).to.eql({});
+		});
 
-    Tinytest.add('Mailgun - getEvents - Future should return the events in the response', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
-            testError = new Error(['Testing errors']),
-            testResponse = {
-                items: [
-                    {
-                        event: testMailgun.CONST.EVENTTYPES.ACCEPTED,
-                        timestamp: '14234991213.01'
-                    }
-                ]
-            };
+		it('Should return the events in the response', function () {
+			var testError = new Error(['Testing errors']),
+				testResponse = {
+					items: [
+						{
+							event: instance.CONST.EVENTTYPES.ACCEPTED,
+							timestamp: '14234991213.01'
+						}
+					]
+				};
 
-        testMailgun.api.events().__proto__.get = function (filter, cb) {
-            cb(testError);
-        };
+			instance.api.events().__proto__.get = function (filter, cb) {
+				cb(testError);
+			};
 
-        var result1 = testMailgun.getEvents({}).wait();
+			var result1 = instance.getEvents({}).wait();
 
-        test.equal(
-            result1,
-            {
-                error: testError,
-                items: []
-            },
-            'Should return the given error'
-        );
+			expect(result1).to.eql({error: testError, items:[]});
 
-        testMailgun.api.events().__proto__.get = function (filter, cb) {
-            cb(undefined, testResponse);
-        };
+			instance.api.events().__proto__.get = function (filter, cb) {
+				cb(undefined, testResponse);
+			};
 
-        var result2 = testMailgun.getEvents({}).wait();
+			var result2 = instance.getEvents({}).wait();
 
-        test.equal(
-            result2,
-            {
-                error: undefined,
-                items: testResponse.items
-            },
-            'Should return items in the response given by the api'
-        );
+			expect(result2).to.eql({
+				error: undefined,
+				items: testResponse.items
+			});
 
-        test.equal(
-            (result2.items[0].date / 1000).toString(),
-            testResponse.items[0].timestamp,
-            'Should add a date object to the event'
-        );
-    });
+			expect((result2.items[0].date / 1000).toString()).to.equal(testResponse.items[0].timestamp);
+		});
 
-    Tinytest.add('Mailgun - getEvents - When the given filter contains a beginDate and endDate ', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
-            testResponse = {
-                items: [
-                    {
-                        event: testMailgun.CONST.EVENTTYPES.ACCEPTED
-                    }
-                ]
-            },
-            beginDate = new Date() - 1000,
-            endDate = new Date(),
-            actualFilter;
+		it('When given a filter - When called with beginDate/endDate - Should convert the beginDate and endDate to a begin and end timestamp', function () {
+			var testResponse = {
+					items: [
+						{
+							event: instance.CONST.EVENTTYPES.ACCEPTED
+						}
+					]
+				},
+				beginDate = new Date() - 1000,
+				endDate = new Date(),
+				actualFilter;
 
-        testMailgun.api.events().__proto__.get = function (filter, cb) {
-            actualFilter = filter;
-            cb(undefined, testResponse);
-        };
+			instance.api.events().__proto__.get = function (filter, cb) {
+				actualFilter = filter;
+				cb(undefined, testResponse);
+			};
 
-        var result = testMailgun.getEvents({
-            beginDate: beginDate,
-            endDate: new Date()
-        }).wait();
+			instance.getEvents({
+				beginDate: beginDate,
+				endDate: new Date()
+			}).wait();
 
-        test.equal(
-            actualFilter.begin,
-            (beginDate / 1000).toString(),
-            'Should add a begin property to the filter passed to mailgun-js'
-        );
+			expect(actualFilter.begin).to.equal((beginDate / 1000).toString());
+			expect(actualFilter.end).to.equal((endDate / 1000).toString());
+			expect(actualFilter.beginDate).to.be.an('undefined');
+			expect(actualFilter.endDate).to.be.an('undefined');
+		});
 
-        test.equal(
-            actualFilter.end,
-            (endDate / 1000).toString(),
-            'Should add a begin property to the filter passed to mailgun-js'
-        );
+		it('When given a filter - When the given filter contains a value for ascending - Should convert true/false to yes/no', function () {
+			var yes = 'yes', no = 'no', valueForAscending;
 
-        test.isUndefined(
-            actualFilter.beginDate,
-            'Should not pass beginDate trough to mailgun-js'
-        );
+			instance.api.events().__proto__.get = function (filter, cb) {
+				valueForAscending = filter.ascending;
+				cb();
+			};
 
-        test.isUndefined(
-            actualFilter.endDate,
-            'Should not pass beginDate trough to mailgun-js'
-        );
-    });
+			instance.getEvents({
+				ascending: true
+			}).wait();
 
-    Tinytest.add('Mailgun - getEvents - When the given filter contains a value for ascending ', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
-            valueForAscending;
+			expect(valueForAscending).to.equal(yes);
 
-        testMailgun.api.events().__proto__.get = function (filter, cb) {
-            valueForAscending = filter.ascending;
-            cb();
-        };
+			instance.getEvents({
+				ascending: false
+			}).wait();
 
-        testMailgun.getEvents({
-            ascending: true
-        }).wait();
+			expect(valueForAscending).to.equal(no);
+		});
+
+		it('When given a filter - When the given filter contains a value for ascending - Should not convert yes or no', function () {
+			var yes = 'yes', no = 'no', valueForAscending;
+
+			instance.api.events().__proto__.get = function (filter, cb) {
+				valueForAscending = filter.ascending;
+				cb();
+			};
+
+			instance.getEvents({
+				ascending: yes
+			}).wait();
 
 
-        test.equal(
-            valueForAscending,
-            'yes',
-            'When ascending is true it should pass yes to mailgun'
-        );
+			expect(valueForAscending).to.equal(yes);
 
-        testMailgun.getEvents({
-            ascending: false
-        }).wait();
+			instance.getEvents({
+				ascending: no
+			}).wait();
 
+			expect(valueForAscending).to.equal(no);
+		});
 
-        test.equal(
-            valueForAscending,
-            'no',
-            'When ascending is false it should pass no to mailgun'
-        );
+		it('When given a filter - When the given filter contains a value for pretty - Should convert true/false to yes/no', function () {
+			var yes = 'yes', no = 'no', valueForPretty;
 
-        testMailgun.getEvents({
-            ascending: 'no'
-        }).wait();
+			instance.api.events().__proto__.get = function (filter, cb) {
+				valueForPretty = filter.pretty;
+				cb();
+			};
 
+			instance.getEvents({
+				pretty: true
+			}).wait();
 
-        test.equal(
-            valueForAscending,
-            'no',
-            'When ascending is no it should pass no to mailgun'
-        );
+			expect(valueForPretty).to.equal(yes);
 
+			instance.getEvents({
+				pretty: false
+			}).wait();
 
-        testMailgun.getEvents({
-            ascending: 'yes'
-        }).wait();
+			expect(valueForPretty).to.equal(no);
+		});
 
+		it('When given a filter - When the given filter contains a value for pretty - Should not convert yes or no', function () {
+			var yes = 'yes', no = 'no', valueForPretty;
 
-        test.equal(
-            valueForAscending,
-            'yes',
-            'When ascending is yes it should pass yes to mailgun'
-        );
-    });
+			instance.api.events().__proto__.get = function (filter, cb) {
+				valueForPretty = filter.pretty;
+				cb();
+			};
 
-    Tinytest.add('Mailgun - getEvents - When the given filter contains a value for pretty ', function (test) {
-        var testMailgun = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'}),
-            valueForPretty;
-
-        testMailgun.api.events().__proto__.get = function (filter, cb) {
-            valueForPretty = filter.pretty;
-            cb();
-        };
-
-        testMailgun.getEvents({
-            pretty: true
-        }).wait();
+			instance.getEvents({
+				pretty: yes
+			}).wait();
 
 
-        test.equal(
-            valueForPretty,
-            'yes',
-            'When pretty is true it should pass yes to mailgun'
-        );
+			expect(valueForPretty).to.equal(yes);
 
-        testMailgun.getEvents({
-            pretty: false
-        }).wait();
+			instance.getEvents({
+				pretty: no
+			}).wait();
 
-
-        test.equal(
-            valueForPretty,
-            'no',
-            'When pretty is false it should pass no to mailgun'
-        );
-
-        testMailgun.getEvents({
-            pretty: 'no'
-        }).wait();
+			expect(valueForPretty).to.equal(no);
+		});
 
 
-        test.equal(
-            valueForPretty,
-            'no',
-            'When pretty is no it should pass no to mailgun'
-        );
-
-
-        testMailgun.getEvents({
-            pretty: 'yes'
-        }).wait();
-
-
-        test.equal(
-            valueForPretty,
-            'yes',
-            'When pretty is yes it should pass yes to mailgun'
-        );
-    });
-
+	});
 //</editor-fold>
 } ());

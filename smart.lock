@@ -12,8 +12,8 @@
       },
       "munit": {
         "git": "https://github.com/spacejamio/meteor-munit.git",
-        "tag": "v0.1.5",
-        "commit": "f238b864e014b633fab06412a0657e81e50f12b5"
+        "tag": "v0.2.0",
+        "commit": "9fbf742c3ea863d9d37f608d58f8fda646c01b2c"
       },
       "chai": {
         "git": "https://github.com/spacejamio/meteor-chai.git",

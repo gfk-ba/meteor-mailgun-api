@@ -123,6 +123,12 @@
         "_": false,               // Underscore.js
         "$": false,               // jQuery
         "Router": false,           // iron-router
-        "Mailgun": false
+        "Mailgun": false,
+		"describe": false,
+		"it": false,
+		"afterEach": false,
+		"beforeEach": false,
+		"sinon": false,
+		"expect": false
     }
 }
