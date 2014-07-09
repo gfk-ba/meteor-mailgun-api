@@ -3,7 +3,7 @@
   "description": "Mailgun api implementation for Meteor",
   "homepage": "https://github.com/gfk-ba/meteor-mailgun-api",
   "author": "Marco de Jongh (marco.dejongh@gfk.com)",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "git": "https://github.com/gfk-ba/meteor-mailgun-api.git",
   "packages": {
     "munit": {
