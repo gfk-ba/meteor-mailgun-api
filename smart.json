@@ -7,8 +7,6 @@
   "git": "https://github.com/gfk-ba/meteor-mailgun-api.git",
   "packages": {
     "munit": {
-		"git": "https://github.com/spacejamio/meteor-munit.git",
-		"tag": "v0.2.0"
 	}
   }
 }
