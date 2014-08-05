@@ -142,7 +142,7 @@ Mailgun = (function () {
 
     /***
      * Checks events for the given filter.
-     * @param filter [filter={}] The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
+     * @param {Object} filter [filter={}] The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
      * @param {Date|String} [filter.beginDate] The beginning of the time range to select log records from. By default it is the time of the request
      * @param {Date|String} [filter.endDate] The end of the time range and the direction of the log record traversal. If end is less than begin, then traversal is performed in the timestamp descending order, otherwise in timestamp ascending order. By default, if ascending is yes, then it is a date in the distant future, otherwise a date in the distant past.
      * @param {Boolean} [filter.ascending=false] The direction of log record traversal. If end is also specified, then the relation between begin and end should agree with the ascending value, otherwise an error will be returned. The default value is deduced from the begin and end relation. If end is not specified, then the value is no, effectively defining traversal direction from begin, to the past, until the end of time.
@@ -178,6 +178,50 @@ Mailgun = (function () {
 
         return fut;
     };
+	/***
+	 * Iterates over the events found with the given filter and calls the appropiate handler for each event.
+	 * @param {Object} filter [filter={}] The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
+	 * @param {Object} eventHandlers hold handlers for the different eventtypes
+	 * @param {Function} eventHandlers.before [eventHandlers.before] Handler to be executed on all events before the actual handler is executed
+	 * @param {Function} eventHandlers.accepted [eventHandlers.accepted] Handler executed on accepted event
+	 * @param {Function} eventHandlers.rejected [eventHandlers.rejected] Handler executed on rejected event
+	 * @param {Function} eventHandlers.delivered [eventHandlers.delivered] Handler executed on delivered event
+	 * @param {Function} eventHandlers.failed [eventHandlers.failed] Handler executed on failed event
+	 * @param {Function} eventHandlers.openend [eventHandlers.openend] Handler executed on openend event
+	 * @param {Function} eventHandlers.clicked [eventHandlers.clicked] Handler executed on clicked event
+	 * @param {Function} eventHandlers.unsubscribed [eventHandlers.unsubscribed] Handler executed on unsubscribed event
+	 * @param {Function} eventHandlers.complained [eventHandlers.complained] Handler executed on complained event
+	 * @param {Function} eventHandlers.stored [eventHandlers.stored] Handler executed on stored event
+	 *
+	 * @returns {{}}
+	 */
+	constructor.prototype.handleEvents = function (filter, eventHandlers) {
+		var result = {};
+
+		if (!_.isObject(eventHandlers)) {
+			result.error = new Error('The eventHandlers argument is not a object');
+		}
+
+		var events = this.getEvents(filter).wait(),
+			supportedEventTypes = _.values(this.CONST.EVENTTYPES);
+
+		if (events.error) {
+			result.error = events.error;
+		} else {
+			_.each(events.items, function (item) {
+				if (_.isFunction(eventHandlers.before)) {
+					eventHandlers.before(item);
+				}
+
+				if (_.isFunction(eventHandlers[item.event])) {
+					eventHandlers[item.event](item);
+				}
+			}, this);
+		}
+
+		return result;
+	};
+
 
     constructor.prototype.CONST = {
         EVENTTYPES: {
@@ -190,7 +234,14 @@ Mailgun = (function () {
             UNSUBSCRIBED: 'unsubscribed',
             COMPLAINED: 'complained',
             STORED: 'stored'
-        }
+        },
+		REASONS: {
+			BOUNCE: 'bounce'
+		},
+		SEVERITIES: {
+			PERMANENT: 'permanent',
+			TEMPORARY: 'temporary'
+		}
     };
 
     return constructor;

@@ -66,19 +66,19 @@ API Documentation
 
 Constructs a new instance of the mailgun wrapper
 
-### Params: 
+### Params:
 
-* **Object** *options* 
+* **Object** *options*
 * **String** *options.apiKey* The api key to use in communication with mailgun
 * **String** *options.domain* The domain to use in communication with mailgun
 
-## send(emailObject, options)
+## send(emailObject, [emailObject.to], [emailObject.cc], [emailObject.bcc], [emailObject.html], [emailObject.text], [emailObject.subject], [emailObject.tags], options, [options.testmode], [options.saveEmailTo])
 
 Sends the email to mailgun
 
-### Params: 
+### Params:
 
-* **Object** *emailObject* 
+* **Object** *emailObject*
 * **String** *[emailObject.to]* Address to which to sent the email
 * **String** *[emailObject.cc]* Address to which to cc the email
 * **String** *[emailObject.bcc]* Address to which to bcc the email
@@ -94,13 +94,35 @@ Sends the email to mailgun
 
 Checks events for the given filter.
 
-### Params: 
+### Params:
 
-* **filter** *[filter={}]* The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
+* **Object** *filter* [filter={}] The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
 * **Date|String** *[filter.beginDate]* The beginning of the time range to select log records from. By default it is the time of the request
 * **Date|String** *[filter.endDate]* The end of the time range and the direction of the log record traversal. If end is less than begin, then traversal is performed in the timestamp descending order, otherwise in timestamp ascending order. By default, if ascending is yes, then it is a date in the distant future, otherwise a date in the distant past.
 * **Boolean** *[filter.ascending=false]* The direction of log record traversal. If end is also specified, then the relation between begin and end should agree with the ascending value, otherwise an error will be returned. The default value is deduced from the begin and end relation. If end is not specified, then the value is no, effectively defining traversal direction from begin, to the past, until the end of time.
 * **Boolean** *[filter.pretty=true]* Defaults to true on the server
+
+## handleEvents([filter={}], eventHandlers)
+
+Iterates over the events found with the given filter and calls the appropiate handler for each event.
+
+### Params:
+
+* **Object** *filter* [filter={}] The filter to use for retrieving the events see: http://documentation.mailgun.com/api-events.html#filter-field
+* **Object** *eventHandlers* hold handlers for the different eventTypes
+* **Function** *eventHandlers.before* [eventHandlers.before] Handler to be executed on all events before the actual handler is executed
+* **Function** *eventHandlers.accepted* [eventHandlers.accepted] Handler executed on accepted event
+* **Function** *eventHandlers.rejected* [eventHandlers.rejected] Handler executed on rejected event
+* **Function** *eventHandlers.delivered* [eventHandlers.delivered] Handler executed on delivered event
+* **Function** *eventHandlers.failed* [eventHandlers.failed] Handler executed on failed event
+* **Function** *eventHandlers.openend* [eventHandlers.openend] Handler executed on openend event
+* **Function** *eventHandlers.clicked* [eventHandlers.clicked] Handler executed on clicked event
+* **Function** *eventHandlers.unsubscribed* [eventHandlers.unsubscribed] Handler executed on unsubscribed event
+* **Function** *eventHandlers.complained* [eventHandlers.complained] Handler executed on complained event
+* **Function** *eventHandlers.stored* [eventHandlers.stored] Handler executed on stored event
+
+<!-- End mailgun-api.js -->
+
 
 Note
 -----

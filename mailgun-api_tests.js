@@ -317,4 +317,128 @@
 
 	});
 //</editor-fold>
+
+//<editor-fold desc="handleEvents tests">
+	describe('Mailgun - #handleEvents', function () {
+		var sandbox, instance, testResponse, testResponseItem, getEvents, testFilter, testHandlers, eventTypes, testItems;
+
+		beforeEach(function () {
+			sandbox = sinon.sandbox.create();
+			instance = new Mailgun({ apiKey: 'Test', domain: 'mail.somewhere.com'});
+
+			testResponse = {
+				"items": [
+				],
+				"errors": undefined
+			};
+
+			testResponseItem = {
+				"tags": [],
+				"envelope": {
+					"transport": "smtp",
+					"sender": "postmaster@samples.mailgun.org",
+					"sending-ip": "184.173.153.199"
+				},
+				"delivery-status": {
+					"message": "",
+					"code": 0,
+					"description": null
+				},
+				"campaigns": [],
+				"user-variables": {},
+				"flags": {
+					"is-authenticated": true,
+					"is-test-mode": false
+				},
+				"timestamp": 1377208314.173742,
+				"message": {
+					"headers": {
+						"to": "recipient@example.com",
+						"message-id": "20130822215151.29325.59996@samples.mailgun.org",
+						"from": "sender@example.com",
+						"subject": "Sample Message"
+					},
+					"attachments": [],
+					"recipients": [
+						"recipient@example.com"
+					],
+					"size": 31143
+				},
+				"recipient": "recipient@example.com",
+				"event": "delivered"
+			};
+
+			getEvents = sandbox.stub(instance, 'getEvents').returns({
+				wait: function () {
+					return testResponse;
+				}
+			});
+
+			testFilter = {};
+			testHandlers = {};
+
+			_.each(eventTypes, function (event) {
+				testHandlers[event] = sinon.spy();
+			});
+
+			testHandlers.before = sinon.spy();
+
+			eventTypes = instance.CONST.EVENTTYPES;
+			testItems = testResponse.items;
+		});
+
+		afterEach(function () {
+			sandbox.restore();
+		});
+
+		it('Should call getEvents', function () {
+			testFilter = {begin:123};
+
+			instance.handleEvents(testFilter);
+
+			expect(getEvents).to.have.been.calledWith(testFilter);
+		});
+
+		it('When called with eventHandlers - Should call the appropiate handler for the appropiate event', function () {
+			var testData = {};
+
+			_.each(eventTypes, function (event) {
+				var testItem = _.clone(testResponseItem);
+				testItem.event = event;
+				testItems.push(testItem);
+
+				testData[event] = testItem;
+			});
+
+			instance.handleEvents(testFilter, testHandlers);
+
+			_.each(eventTypes, function (event) {
+				expect(testHandlers.before).to.have.been.calledBefore(testHandlers[event]);
+				expect(testHandlers.before).to.have.been.calledWith(testData[event]);
+				expect(testHandlers[event]).to.have.been.calledWith(testData[event]);
+			});
+		});
+
+		it('When called with eventHandlers - When getEvents returns a error - It should return that error', function () {
+			var testError = new Error('Foobar');
+
+			testResponse = {
+				error: testError
+			};
+
+			var res = instance.handleEvents(testFilter, testHandlers);
+
+			expect(res.error).to.eql(testError);
+		});
+
+
+		it('When called without eventHandlers - it should return a error', function () {
+			var res = instance.handleEvents({});
+
+			expect(_.isString(res.error.message)).to.equal(true);
+		});
+	});
+//</editor-fold>
+
+
 } ());
