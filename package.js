@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     Npm.depends({
-        'mailgun-js': '0.5.1',
+        'mailgun-js': '0.5.4',
         'mkdirp': '0.3.5'
     });
 
