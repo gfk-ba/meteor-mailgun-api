@@ -20,7 +20,17 @@ There is a example application deployed at [meteor.com](http://mailgun-api-examp
 
 Installation
 ------------
-Install this package using [Meteorite](https://github.com/oortcloud/meteorite/):
+Install this package using meteor
+
+```
+meteor add gfk:mailgun-api
+```
+
+Meteor versions below 0.9 can still use the meteorite version
+
+```
+mrt add mailgun-api
+```
 
 Usage
 -----
