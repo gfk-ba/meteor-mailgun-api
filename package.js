@@ -1,25 +1,41 @@
-(function () {
-    'use strict';
-    Npm.depends({
-        'mailgun-js': '0.5.4',
-        'mkdirp': '0.3.5'
-    });
+'use strict';
 
-    Package.describe({
-        summary: "Mailgun API - Mailgun api implementation for Meteor."
-    });
+function configurePackage (api) {
+	Npm.depends({
+		'mailgun-js': '0.5.4',
+		'mkdirp': '0.3.5'
+	});
 
-    Package.on_use(function(api) {
-        // Allow us to detect 'insecure'.
-        api.use('insecure', {weak: true});
+	api.use('insecure', {weak: true});
 
-        api.add_files('mailgun-api.js', ['server']);
-        api.export('Mailgun', ['server']);
-    });
+	if (api.versionsFrom) {
+		api.versionsFrom('METEOR@0.9.0');
 
-    Package.on_test(function (api) {
-        api.use(['mailgun-api', 'tinytest', 'munit', 'sinon', 'chai']);
+	}
 
-        api.add_files('mailgun-api_tests.js', ['server']);
-    });
-} ());
+	api.add_files('mailgun-api.js', ['server']);
+}
+
+
+
+
+Package.describe({
+	summary: 'Mailgun API - Mailgun api implementation for Meteor.',
+	version: '1.0.0',
+	git: 'https://github.com/gfk-ba/meteor-mailgun-api'
+});
+
+Package.on_use(function(api) {
+	configurePackage(api);
+	api.export('Mailgun', ['server']);
+});
+
+Package.on_test(function (api) {
+	configurePackage(api);
+
+	api.use(['gfk:mailgun-api', 'tinytest@1.0.0', 'gfk:munit@1.0.0', 'mdj:chai@1.0.0', 'mdj:sinon@1.0.0'], 'server');
+
+	api.add_files('mailgun-api_tests.js', ['server']);
+});
+
+
