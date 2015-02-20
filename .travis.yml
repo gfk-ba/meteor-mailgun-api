@@ -1,8 +1,11 @@
-      language: node_js
-      node_js:
-      - "0.10"
-      before_install:
-      - "curl -L http://git.io/ejPSng | /bin/sh"
-      branches:
-        only:
-          - master
+language: node_js
+node_js:
+- '0.10'
+before_install:
+- curl -L http://git.io/ejPSng | /bin/sh
+branches:
+  only:
+  - master
+notifications:
+  slack:
+    secure: Da37gAyKJQYoGaMEzSj/PmhgxDytHc17Ej8bur7HTXIsVfJwXDWySruOE/gZC81MdfLpfLoXDHsXkaCdACqIThWyooZITFHLhmVPdr4j7THZpvoc9bDRuc7yeZkKxdGmsWmWJ5MSx1gc6h/peVegd28uEconugITTd+XLOcHhbU=
