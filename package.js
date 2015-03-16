@@ -2,7 +2,7 @@
 
 function configurePackage (api) {
 	Npm.depends({
-		'mailgun-js': '0.5.4',
+		'mailgun-js': '0.6.8',
 		'mkdirp': '0.3.5'
 	});
 
@@ -37,5 +37,3 @@ Package.on_test(function (api) {
 
 	api.add_files('mailgun-api_tests.js', ['server']);
 });
-
-
