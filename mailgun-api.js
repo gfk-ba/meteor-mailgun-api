@@ -6,15 +6,13 @@ Mailgun = (function () {
      * @param {Object} options
      * @param {String} options.apiKey The api key to use in communication with mailgun
      * @param {String} options.domain The domain to use in communication with mailgun
+     * @param {Boolean} options.mute Set to true if you wish to mute the console error logs in validateWebhook() function
+     * @param {String} options.proxy - The proxy URI in format http[s]://[auth@]host:port. ex: 'http://proxy.example.com:8080'
      * @constructor
      */
     var constructor = function (options) {
         var mailgunJS = Npm.require('mailgun-js');
-
-        this.api = new mailgunJS({
-            apiKey: options.apiKey,
-            domain: options.domain
-        });
+        this.api = new mailgunJS(options);
     };
 
     /***
