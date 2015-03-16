@@ -9,7 +9,7 @@ function configurePackage (api) {
 	api.use('insecure', {weak: true});
 
 	if (api.versionsFrom) {
-		api.versionsFrom('METEOR@0.9.0');
+		api.versionsFrom('METEOR@1.0');
 
 	}
 
@@ -33,7 +33,7 @@ Package.on_use(function(api) {
 Package.on_test(function (api) {
 	configurePackage(api);
 
-	api.use(['gfk:mailgun-api', 'tinytest@1.0.0', 'gfk:munit@1.0.0', 'mdj:chai@1.0.0', 'mdj:sinon@1.0.0'], 'server');
+	api.use(['gfk:mailgun-api', 'tinytest@1.0.0', 'practicalmeteor:munit@2.1.2'], 'server');
 
 	api.add_files('mailgun-api_tests.js', ['server']);
 });

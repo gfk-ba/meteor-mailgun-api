@@ -16,13 +16,6 @@
 			expect(testMailgun.api).to.be.a('object');
 		});
 
-		it('Should put a instance of mailgun-js on api', function () {
-			var mailgunJs = Npm.require('mailgun-js'),
-				testMailgun = new Mailgun({});
-
-			expect(testMailgun.api).to.be.instanceof(mailgunJs);
-		});
-
 		it('When given options - expect apiKey to be set', function () {
 			var testApiKey = 'Test',
 				testMailgun = new Mailgun({ apiKey: testApiKey, domain: 'mail.somewhere.com'});
@@ -60,8 +53,7 @@
 			expect(send.args[0][0]['o:testmode']).to.equal(true);
 		});
 
-		//TODO: Re enable when https://github.com/gfk-ba/meteor-sinon/issues/1 is fixed
-		it.skip('Should create a valid emailobject', function () {
+		it('Should create a valid emailobject', function () {
 			var send = sandbox.stub(instance, '_send').returns({wait: function () { return {response: '', error: ''};}});
 
 			var testPayload = {
@@ -86,8 +78,7 @@
 			expect(send).to.have.been.calledWith(expected);
 		});
 
-		//TODO: Re enable when https://github.com/gfk-ba/meteor-sinon/issues/1 is fixed
-		it.skip('Should save email to disk when options.saveEmailTo is defined', function () {
+		it('Should save email to disk when options.saveEmailTo is defined', function () {
 			var send = sandbox.stub(instance, '_send').returns({wait: function () { return {response: '', error: ''};}}),
 				fs = Npm.require('fs'),
 				mkdirp = Npm.require('mkdirp');
@@ -146,28 +137,6 @@
 			expect(instance.CONST).to.be.a('object');
 			expect(instance.CONST.EVENTTYPES).to.be.a('object');
 			expect(_.size(instance.CONST.EVENTTYPES)).to.be.at.least(1);
-		});
-
-		it('Should call api.get', function () {
-			var testFilter = {
-					test: 123
-				},
-				oldGet = instance.api.get,
-				calledWith;
-
-			//Manual stub because sinon doesn't like it when you try to stub something in __proto__
-			instance.api.events().__proto__.get = function () {
-				calledWith = arguments;
-				oldGet.apply(this, arguments);
-			};
-
-			instance.getEvents(testFilter);
-
-			expect(calledWith[0]).to.eql({"test":123});
-
-			instance.getEvents();
-
-			expect(calledWith[0]).to.eql({});
 		});
 
 		it('Should return the events in the response', function () {
@@ -394,8 +363,7 @@
 			sandbox.restore();
 		});
 
-		//TODO: Re enable when https://github.com/gfk-ba/meteor-sinon/issues/1 is fixed
-		it.skip('Should call getEvents', function () {
+		it('Should call getEvents', function () {
 			testFilter = {begin:123};
 
 			instance.handleEvents(testFilter);
@@ -403,8 +371,7 @@
 			expect(getEvents).to.have.been.calledWith(testFilter);
 		});
 
-		//TODO: Re enable when https://github.com/gfk-ba/meteor-sinon/issues/1 is fixed
-		it.skip('When called with eventHandlers - Should call the appropiate handler for the appropiate event', function () {
+		it('When called with eventHandlers - Should call the appropiate handler for the appropiate event', function () {
 			var testData = {};
 
 			_.each(eventTypes, function (event) {
