@@ -21,7 +21,7 @@ function configurePackage (api) {
 
 Package.describe({
 	summary: 'Mailgun API - Mailgun api implementation for Meteor.',
-	version: '1.0.0',
+	version: '1.1.0',
 	git: 'https://github.com/gfk-ba/meteor-mailgun-api'
 });
 
