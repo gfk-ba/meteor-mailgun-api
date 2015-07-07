@@ -62,8 +62,8 @@ See the mailgun-js npm page for more info [mailgun-js](https://www.npmjs.org/pac
 
 FAQ
 ----------------
-## Attachment support
-Currently the wrapper does not wrap the attachment system of mailgun-js I plan on implementing this later. #3
+### Attachment support
+Currently the wrapper does not wrap the attachment system of mailgun-js I plan on implementing this later [#3](https://github.com/gfk-ba/meteor-mailgun-api/issues/3#issuecomment-119203395).
 As a work around until I get around to implementing attachment support you can use the following code:
 
 ```
