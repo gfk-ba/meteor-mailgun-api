@@ -26,12 +26,6 @@ Install this package using meteor
 meteor add gfk:mailgun-api
 ```
 
-Meteor versions below 0.9 can still use the meteorite version
-
-```
-mrt add mailgun-api
-```
-
 Usage
 -----
 Instantiate:
@@ -65,6 +59,33 @@ The reference to the npm package lives in .api for example:
 ```
 
 See the mailgun-js npm page for more info [mailgun-js](https://www.npmjs.org/package/mailgun-js)
+
+FAQ
+----------------
+## Attachment support
+Currently the wrapper does not wrap the attachment system of mailgun-js I plan on implementing this later. #3
+As a work around until I get around to implementing attachment support you can use the following code:
+
+```
+var readFile = Meteor.wrapAsync(Npm.require('fs').readFile)
+var path = Npm.require('path');
+var filename = 'mailgun_logo.png';
+var filepath = path.join(__dirname, filename);
+
+var file = readFile(filepath);
+
+var attch = new MailgunInstance.api.Attachment({data: file, filename: filename});
+
+var data = {
+  from: 'Excited User <me@samples.mailgun.org>',
+  to: 'serobnic@mail.ru',
+  subject: 'Hello',
+  text: 'Testing some Mailgun awesomness!',
+  attachment: attch
+};
+
+mailgunInstance.send(data);
+```
 
 API Documentation
 ------------
