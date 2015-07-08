@@ -1,39 +1,25 @@
 'use strict';
-
-function configurePackage (api) {
-	Npm.depends({
-		'mailgun-js': '0.6.8',
-		'mkdirp': '0.3.5'
-	});
-
-	api.use('insecure', {weak: true});
-
-	if (api.versionsFrom) {
-		api.versionsFrom('METEOR@1.0');
-
-	}
-
-	api.add_files('mailgun-api.js', ['server']);
-}
-
-
-
-
 Package.describe({
 	summary: 'Mailgun API - Mailgun api implementation for Meteor.',
 	version: '1.1.0',
 	git: 'https://github.com/gfk-ba/meteor-mailgun-api'
 });
 
-Package.on_use(function(api) {
-	configurePackage(api);
+Npm.depends({
+	'mailgun-js': '0.7.0',
+	'mkdirp': '0.3.5'
+});
+
+Package.onUse(function(api) {
+	api.versionsFrom('METEOR@1.0');
+
+	api.add_files('mailgun-api.js', ['server']);
+
 	api.export('Mailgun', ['server']);
 });
 
-Package.on_test(function (api) {
-	configurePackage(api);
-
-	api.use(['gfk:mailgun-api', 'tinytest@1.0.0', 'practicalmeteor:munit@2.1.2'], 'server');
+Package.onTest(function (api) {
+	api.use(['gfk:mailgun-api', 'tinytest', 'practicalmeteor:munit@2.1.2'], 'server');
 
 	api.add_files('mailgun-api_tests.js', ['server']);
 });
