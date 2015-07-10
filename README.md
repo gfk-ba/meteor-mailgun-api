@@ -67,6 +67,8 @@ Currently the wrapper does not wrap the attachment system of mailgun-js I plan o
 As a work around until I get around to implementing attachment support you can use the following code:
 
 ```
+var MailgunInstance = new Mailgun(mailgunOptions);
+
 var readFile = Meteor.wrapAsync(Npm.require('fs').readFile)
 var path = Npm.require('path');
 var filename = 'mailgun_logo.png';
