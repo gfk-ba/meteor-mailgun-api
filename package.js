@@ -6,7 +6,7 @@ Package.describe({
 });
 
 Npm.depends({
-	'mailgun-js': '0.7.0',
+	'mailgun-js': '0.7.7',
 	'mkdirp': '0.3.5'
 });
 
